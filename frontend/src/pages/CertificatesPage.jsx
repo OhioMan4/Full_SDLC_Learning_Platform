@@ -15,19 +15,47 @@ export default function CertificatesPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p>Loading certificates...</p>;
-  if (error) return <p className="error">{error}</p>;
+  if (loading) {
+    return (
+      <div className="card loading-panel">
+        <p className="eyebrow">Certificates</p>
+        <div className="pulse" />
+        <div className="pulse" />
+      </div>
+    );
+  }
+
+  if (error) return <div className="card"><p className="error">{error}</p></div>;
 
   return (
     <div className="stack">
-      <h2>Certificates</h2>
-      {certificates.map((certificate) => (
-        <article key={certificate.id} className="card">
-          <h3>{certificate.course_title || certificate.course_id}</h3>
-          <p>{certificate.certificate_number}</p>
-          <p>Generated: {new Date(certificate.generated_at).toLocaleString()}</p>
-        </article>
-      ))}
+      <div className="section-title">
+        <div>
+          <p className="eyebrow">Completion</p>
+          <h2>Certificates</h2>
+        </div>
+        <p className="muted">{certificates.length} issued</p>
+      </div>
+
+      {certificates.length === 0 ? (
+        <div className="card empty-state">
+          <h3>No certificates yet</h3>
+          <p className="muted">Complete a course to generate the first certificate.</p>
+        </div>
+      ) : (
+        <div className="grid">
+          {certificates.map((certificate) => (
+            <article key={certificate.id} className="card stack">
+              <div className="meta">
+                <span className="badge success">Generated</span>
+                <span>{new Date(certificate.generated_at).toLocaleString()}</span>
+              </div>
+              <h3>{certificate.course_title || certificate.course_id}</h3>
+              <p className="muted">{certificate.certificate_number}</p>
+            </article>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

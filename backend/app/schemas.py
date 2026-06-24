@@ -133,3 +133,20 @@ class PlatformStats(BaseModel):
     completed_courses: int
     generated_certificates: int
 
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class AuthUser(BaseModel):
+    id: str
+    name: str
+    role: str
+
+
+class LoginResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: AuthUser
+

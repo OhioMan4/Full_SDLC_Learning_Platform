@@ -28,23 +28,50 @@ export default function AdminPage() {
       .catch((err) => setError(err.message));
   }, []);
 
-  if (error) return <p className="error">{error}</p>;
-  if (!stats) return <p>Loading platform status...</p>;
+  if (error) return <div className="card"><p className="error">{error}</p></div>;
+  if (!stats) return <div className="card loading-panel"><div className="pulse" /><div className="pulse" /></div>;
 
   return (
     <div className="stack">
-      <h2>Admin / System</h2>
-      <div className="grid">
-        <article className="card"><h3>{stats.totalCourses}</h3><p>Total Courses</p></article>
-        <article className="card"><h3>{stats.totalEnrollments}</h3><p>Total Enrollments</p></article>
-        <article className="card"><h3>{stats.completedCourses}</h3><p>Completed Courses</p></article>
-        <article className="card"><h3>{stats.generatedCertificates}</h3><p>Generated Certificates</p></article>
+      <div className="section-title">
+        <div>
+          <p className="eyebrow">Admin / System</p>
+          <h2>Platform status</h2>
+        </div>
+        <p className="muted">Live summary</p>
       </div>
-      <section className="card">
-        <h3>Recent Audit Events</h3>
-        {events.map((event) => (
-          <p key={event.id}>{event.event_type} · {event.entity_type} · {new Date(event.created_at).toLocaleString()}</p>
-        ))}
+
+      <div className="stat-grid">
+        <article className="card stat-card"><h3>{stats.totalCourses}</h3><p>Total Courses</p></article>
+        <article className="card stat-card"><h3>{stats.totalEnrollments}</h3><p>Total Enrollments</p></article>
+        <article className="card stat-card"><h3>{stats.completedCourses}</h3><p>Completed Courses</p></article>
+        <article className="card stat-card"><h3>{stats.generatedCertificates}</h3><p>Generated Certificates</p></article>
+      </div>
+
+      <section className="card stack">
+        <div className="section-title">
+          <h3>Recent Audit Events</h3>
+          <span className="muted">{events.length} shown</span>
+        </div>
+
+        {events.length === 0 ? (
+          <div className="empty-state">
+            <h3>No audit events yet</h3>
+            <p className="muted">Events will appear as users enroll and complete lessons.</p>
+          </div>
+        ) : (
+          <div className="stack">
+            {events.map((event) => (
+              <article key={event.id} className="card">
+                <div className="meta">
+                  <span className="badge info">{event.event_type}</span>
+                  <span>{event.entity_type}</span>
+                  <span>{new Date(event.created_at).toLocaleString()}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

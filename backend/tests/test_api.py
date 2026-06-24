@@ -20,6 +20,13 @@ def client() -> TestClient:
         yield test_client
 
 
+def auth_headers(client: TestClient) -> dict:
+    login = client.post("/auth/login", json={"username": "student-1", "password": "demo123"})
+    assert login.status_code == 200
+    token = login.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
 def test_health(client: TestClient):
     response = client.get("/health")
     assert response.status_code == 200
@@ -27,43 +34,46 @@ def test_health(client: TestClient):
 
 
 def test_list_courses(client: TestClient):
-    response = client.get("/courses")
+    response = client.get("/courses", headers=auth_headers(client))
     assert response.status_code == 200
     assert len(response.json()) >= 4
 
 
 def test_enroll_complete_and_certificate_flow(client: TestClient):
-    courses = client.get("/courses").json()
-    course_id = courses[0]["id"]
-    lessons = client.get(f"/courses/{course_id}/lessons").json()
+    headers = auth_headers(client)
 
-    enroll = client.post("/enrollments", json={"student_id": "student-1", "course_id": course_id})
+    courses = client.get("/courses", headers=headers).json()
+    course_id = courses[0]["id"]
+    lessons = client.get(f"/courses/{course_id}/lessons", headers=headers).json()
+
+    enroll = client.post("/enrollments", json={"student_id": "student-1", "course_id": course_id}, headers=headers)
     assert enroll.status_code == 201
 
-    student_enrollments = client.get("/students/student-1/enrollments")
+    student_enrollments = client.get("/students/student-1/enrollments", headers=headers)
     assert student_enrollments.status_code == 200
     assert len(student_enrollments.json()) == 1
 
-    duplicate = client.post("/enrollments", json={"student_id": "student-1", "course_id": course_id})
+    duplicate = client.post("/enrollments", json={"student_id": "student-1", "course_id": course_id}, headers=headers)
     assert duplicate.status_code == 400
 
     for lesson in lessons:
         complete = client.post(
             "/progress/lessons/complete",
             json={"student_id": "student-1", "course_id": course_id, "lesson_id": lesson["id"]},
+            headers=headers,
         )
         assert complete.status_code == 200
 
-    progress = client.get(f"/students/student-1/courses/{course_id}/progress")
+    progress = client.get(f"/students/student-1/courses/{course_id}/progress", headers=headers)
     assert progress.status_code == 200
     body = progress.json()
     assert body["completed_lessons"] == len(lessons)
     assert body["status"] == "COMPLETED"
 
-    all_progress = client.get("/students/student-1/progress")
+    all_progress = client.get("/students/student-1/progress", headers=headers)
     assert all_progress.status_code == 200
     assert len(all_progress.json()) == 1
 
-    certificates = client.get("/students/student-1/certificates")
+    certificates = client.get("/students/student-1/certificates", headers=headers)
     assert certificates.status_code == 200
     assert len(certificates.json()) == 1

@@ -14,20 +14,55 @@ Simple local-first learning platform built with FastAPI, React + Vite, and Postg
 - Backend: FastAPI, SQLAlchemy, Pydantic
 - Frontend: React, Vite
 - Database: PostgreSQL
-- Local run: Docker Compose
+- Local run: direct backend/frontend startup
 
 ## Architecture
 `React + Vite frontend -> FastAPI API -> PostgreSQL`
 
+## Authentication (local demo)
+- The app now requires sign-in for all protected endpoints/pages.
+- Demo login:
+  - Username: `student-1`
+  - Password: value from `DEMO_USER_PASSWORD` (default: `demo123`)
+- Backend endpoints:
+  - `POST /auth/login`
+  - `GET /auth/me` (Bearer token required)
+
 ## Local setup
 1. Copy `.env.example` to `.env`.
-2. Run `docker compose up --build`.
-3. Open the frontend at `http://localhost:3000`.
-4. The frontend uses `/api` in the browser and proxies it to the backend during development.
+2. Set `AUTH_SECRET` and optionally `DEMO_USER_PASSWORD`.
+3. Start PostgreSQL locally and make sure `DATABASE_URL` points to it.
+4. Run the backend from the `backend` folder.
+5. Run the frontend from the `frontend` folder.
+6. Open the frontend at `http://localhost:3000`.
+
+## Backend run locally
+1. Open a terminal in `backend`.
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Start the API:
+   ```bash
+   uvicorn app.main:app --host 0.0.0.0 --port 8000
+   ```
+
+## Frontend run locally
+1. Open a terminal in `frontend`.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the dev server:
+   ```bash
+   npm run dev -- --host 0.0.0.0
+   ```
+4. Open `http://localhost:3000`.
 
 ## Docker Compose
-- `docker compose up --build`
-- `docker compose down`
+- Optional alternative:
+  - `docker compose up --build`
+  - `docker compose down`
 
 ## API examples
 - `GET /health`

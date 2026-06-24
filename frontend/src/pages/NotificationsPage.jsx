@@ -15,18 +15,46 @@ export default function NotificationsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p>Loading notifications...</p>;
-  if (error) return <p className="error">{error}</p>;
+  if (loading) {
+    return (
+      <div className="card loading-panel">
+        <p className="eyebrow">Notifications</p>
+        <div className="pulse" />
+        <div className="pulse" />
+      </div>
+    );
+  }
+
+  if (error) return <div className="card"><p className="error">{error}</p></div>;
 
   return (
     <div className="stack">
-      <h2>Notifications</h2>
-      {notifications.map((notification) => (
-        <article key={notification.id} className="card">
-          <strong>{notification.type}</strong>
-          <p>{notification.message}</p>
-        </article>
-      ))}
+      <div className="section-title">
+        <div>
+          <p className="eyebrow">Notifications</p>
+          <h2>Alerts & updates</h2>
+        </div>
+        <p className="muted">{notifications.length} item{notifications.length === 1 ? '' : 's'}</p>
+      </div>
+
+      {notifications.length === 0 ? (
+        <div className="card empty-state">
+          <h3>No notifications yet</h3>
+          <p className="muted">New course and progress events will appear here.</p>
+        </div>
+      ) : (
+        <div className="stack">
+          {notifications.map((notification) => (
+            <article key={notification.id} className="card stack">
+              <div className="meta">
+                <span className="badge info">{notification.type}</span>
+                <span>{new Date(notification.created_at).toLocaleString()}</span>
+              </div>
+              <p>{notification.message}</p>
+            </article>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

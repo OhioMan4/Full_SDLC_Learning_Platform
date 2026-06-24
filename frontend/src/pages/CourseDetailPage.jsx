@@ -20,6 +20,9 @@ export default function CourseDetailPage() {
 
   const load = () => {
     setLoading(true);
+    setError('');
+    setMessage('');
+
     Promise.all([
       api.getCourse(courseId),
       api.getLessons(courseId),
@@ -48,32 +51,66 @@ export default function CourseDetailPage() {
     }
   };
 
-  if (loading) return <p>Loading course...</p>;
-  if (error) return <p className="error">{error}</p>;
+  if (loading) {
+    return (
+      <div className="card loading-panel">
+        <p className="eyebrow">Course detail</p>
+        <div className="pulse" />
+        <div className="pulse" />
+        <div className="pulse" />
+      </div>
+    );
+  }
+
+  if (error) return <div className="card"><p className="error">{error}</p></div>;
   if (!course) return null;
 
   return (
-    <div className="stack">
-      <section className="card">
-        <h2>{course.title}</h2>
-        <p>{course.description}</p>
-        <p>{course.category} · {course.level} · {course.instructor}</p>
-        <p>{course.duration_minutes} minutes</p>
-        {enrolled ? (
-          <Link className="button" to={`/learn/${course.id}`}>Go to Learning</Link>
-        ) : (
-          <button className="button" onClick={handleEnroll}>Enroll</button>
-        )}
+    <div className="course-layout">
+      <section className="card stack">
+        <div className="section-title">
+          <div>
+            <p className="eyebrow">Course overview</p>
+            <h2>{course.title}</h2>
+          </div>
+          <span className={`badge ${enrolled ? 'success' : 'neutral'}`}>
+            {enrolled ? 'Enrolled' : 'Not enrolled'}
+          </span>
+        </div>
+
+        <p className="lead">{course.description}</p>
+
+        <div className="meta">
+          <span>{course.category}</span>
+          <span>• {course.level}</span>
+          <span>• {course.instructor}</span>
+          <span>• {course.duration_minutes} min</span>
+        </div>
+
+        <div className="actions">
+          {enrolled ? (
+            <Link className="button" to={`/learn/${course.id}`}>Go to Learning</Link>
+          ) : (
+            <button className="button" onClick={handleEnroll}>Enroll</button>
+          )}
+        </div>
+
         {message && <p className="muted">{message}</p>}
       </section>
-      <section className="card">
-        <h3>Lessons</h3>
-        <ol>
+
+      <aside className="card stack">
+        <div className="section-title">
+          <h3>Syllabus</h3>
+          <span className="muted">{lessons.length} lessons</span>
+        </div>
+        <ol className="syllabus-list">
           {lessons.map((lesson) => (
-            <li key={lesson.id}>{lesson.order_index}. {lesson.title}</li>
+            <li key={lesson.id} className="syllabus-item">
+              {lesson.order_index}. {lesson.title}
+            </li>
           ))}
         </ol>
-      </section>
+      </aside>
     </div>
   );
 }

@@ -1,9 +1,24 @@
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '');
+const TOKEN_KEY = 'learning_auth_token';
+
+export function getStoredToken() {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+export function setStoredToken(token) {
+  localStorage.setItem(TOKEN_KEY, token);
+}
+
+export function clearStoredToken() {
+  localStorage.removeItem(TOKEN_KEY);
+}
 
 async function request(path, options = {}) {
+  const token = getStoredToken();
   const response = await fetch(`${API_BASE_URL}${path}`, {
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
     ...options,
@@ -16,6 +31,11 @@ async function request(path, options = {}) {
 }
 
 export const api = {
+  login: (username, password) => request('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ username, password }),
+  }),
+  me: () => request('/auth/me'),
   getCourses: () => request('/courses'),
   getCourse: (courseId) => request(`/courses/${courseId}`),
   getLessons: (courseId) => request(`/courses/${courseId}/lessons`),
